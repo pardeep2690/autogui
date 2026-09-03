@@ -1,0 +1,14 @@
+*.gem
+*.png
+*.bmp
+screenshot*.png
+.DS_Store
+tmp/
+pkg/
+.idea/
+.vscode/
+.bundle/
+vendor/bundle/
+*.swp
+*~
+/Gemfile.lock
