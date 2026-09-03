@@ -15,13 +15,16 @@ require_relative "autogui/message_box"
 require_relative "autogui/window"
 require_relative "autogui/run"
 
-# Cross-platform GUI automation for Ruby, ported from Python PyAutoGUI.
+# AutoGUI — desktop GUI automation for Ruby (mouse, keyboard, screenshots).
 #
 #   require "autogui"
-#   x, y = AutoGUI.position
 #   AutoGUI.move_to(100, 150)
 #   AutoGUI.click
 #   AutoGUI.write("Hello world!")
+#
+# Install: <tt>gem install autogui</tt>
+# Docs: README.md, docs/api.md, docs/guide.md
+# Fail-safe: moving the cursor to a screen corner raises {FailSafeException}.
 module AutoGUI
   class << self
     attr_accessor :pause, :failsafe, :minimum_duration, :minimum_sleep,
