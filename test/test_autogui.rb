@@ -230,8 +230,45 @@ class ApiSmokeTest < Minitest::Test
   end
 
   def test_aliases
-    assert_equal AutoGUI.method(:moveTo).original_name, AutoGUI.method(:move_to).original_name
-    assert_equal AutoGUI.method(:typewrite).original_name, AutoGUI.method(:write).original_name
+    assert AutoGUI.respond_to?(:move_to)
+    assert AutoGUI.respond_to?(:write)
+    assert AutoGUI.respond_to?(:resolution)
+    assert_equal AutoGUI.size, AutoGUI.resolution
+  end
+
+  def test_documented_public_methods_exist
+    %i[
+      size resolution position on_screen onScreen pixel pixel_matches_color pixelMatchesColor
+      print_info printInfo get_info getInfo sleep countdown fail_safe_check failSafeCheck
+      move_to moveTo move move_rel moveRel drag_to dragTo drag drag_rel dragRel
+      click left_click leftClick right_click rightClick middle_click middleClick
+      double_click doubleClick triple_click tripleClick mouse_down mouseDown mouse_up mouseUp
+      scroll hscroll vscroll
+      display_mouse_position displayMousePosition mouse_info mouseInfo
+      write typewrite press hotkey shortcut hold key_down keyDown key_up keyUp
+      valid_key? isValidKey is_valid_key shift_character? isShiftCharacter
+      screenshot grab locate_on_screen locateOnScreen locate_center_on_screen locateCenterOnScreen
+      locate_all_on_screen locateAllOnScreen locate locate_all locateAll locate_on_window locateOnWindow
+      center use_image_not_found_exception! useImageNotFoundException
+      alert confirm prompt password
+      get_all_windows getAllWindows get_all_titles getAllTitles
+      get_active_window getActiveWindow get_active_window_title getActiveWindowTitle
+      get_windows_with_title getWindowsWithTitle get_windows_at getWindowsAt
+      linear get_point_on_line getPointOnLine run platform_module
+    ].each do |name|
+      assert AutoGUI.respond_to?(name), "AutoGUI.#{name}"
+    end
+  end
+
+  def test_module_function_aliases_are_promoted
+    [AutoGUI, AutoGUI::WindowFunctions, AutoGUI.platform_module].each do |mod|
+      missing = (mod.private_instance_methods(false) + mod.instance_methods(false)).uniq.reject do |name|
+        mod.singleton_class.method_defined?(name) || mod.singleton_class.private_method_defined?(name)
+      end
+      assert_empty missing, "#{mod} missing module functions: #{missing.inspect}"
+    end
+    assert AutoGUI.platform_module.respond_to?(:vscroll)
+    assert AutoGUI.platform_module.respond_to?(:scroll)
   end
 
   def test_normalize_xy_tuple_and_none
@@ -290,12 +327,50 @@ class ApiSmokeTest < Minitest::Test
     assert_raises(ArgumentError) { AutoGUI.hold("shift") }
   end
 
+  def test_window_snake_case_aliases_exist
+    %i[
+      get_all_windows get_all_titles get_windows_with_title
+      get_windows_at get_active_window get_active_window_title
+    ].each do |name|
+      assert AutoGUI.respond_to?(name), "AutoGUI.#{name}"
+      assert AutoGUI::WindowFunctions.respond_to?(name), "WindowFunctions.#{name}"
+    end
+  end
+
   def test_windows_enumeration
     skip "window APIs are Windows-only" unless RbConfig::CONFIG["host_os"] =~ /mswin|mingw|cygwin/i
-    titles = AutoGUI.getAllTitles
+    titles = AutoGUI.get_all_titles
     assert_kind_of Array, titles
-    active = AutoGUI.getActiveWindow
+    titles.each { |t| assert_kind_of String, t }
+    windows = AutoGUI.get_all_windows
+    assert_equal titles.length, windows.length
+    active = AutoGUI.get_active_window
     assert active.nil? || active.title.is_a?(String)
+    assert_equal active&.title, AutoGUI.get_active_window_title
+    notepad = AutoGUI.get_windows_with_title("Notepad")
+    assert_kind_of Array, notepad
+    at_point = AutoGUI.get_windows_at(400, 300)
+    assert_kind_of Array, at_point
+    at_point.each { |w| assert_kind_of AutoGUI::Window, w }
+  end
+end
+
+class WindowsWideTest < Minitest::Test
+  def setup
+    skip "wide() is Windows-only" unless RbConfig::CONFIG["host_os"] =~ /mswin|mingw|cygwin/i
+    AutoGUI::Platform.current
+  end
+
+  def test_wide_null_terminates_ascii
+    wide = AutoGUI::Platform::Windows.wide("Done.")
+    assert_equal Encoding::ASCII_8BIT, wide.encoding
+    assert_equal "Done.\0".encode("UTF-16LE").b, wide
+  end
+
+  def test_wide_handles_non_ascii
+    wide = AutoGUI::Platform::Windows.wide("café")
+    decoded = wide.dup.force_encoding("UTF-16LE").encode("UTF-8").delete("\x00")
+    assert_equal "café", decoded
   end
 end
 

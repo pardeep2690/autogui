@@ -74,7 +74,7 @@ Or build a `.gem` from the repo:
 git clone https://github.com/pardeep2690/autogui.git
 cd autogui
 gem build autogui.gemspec
-gem install autogui-1.0.0.gem
+gem install autogui-1.0.1.gem
 ```
 
 ### Platform extras

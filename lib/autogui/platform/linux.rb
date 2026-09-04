@@ -167,6 +167,8 @@ module AutoGUI
       def command?(name)
         system("which", name, out: File::NULL, err: File::NULL)
       end
+
+      Platform.copy_aliases!(self)
     end
   end
 end

@@ -684,48 +684,7 @@ module AutoGUI
     @log_screenshot_filenames << filename
   end
 
-  # module_function copies methods to the singleton class but does not copy
-  # subsequent `alias` names. Re-alias them on the singleton class.
-  class << self
-    {
-      get_point_on_line: :getPointOnLine,
-      fail_safe_check: :failSafeCheck,
-      use_image_not_found_exception!: :useImageNotFoundException,
-      on_screen: :onScreen,
-      valid_key?: :isValidKey,
-      is_valid_key: :isValidKey,
-      mouse_down: :mouseDown,
-      mouse_up: :mouseUp,
-      left_click: :leftClick,
-      right_click: :rightClick,
-      middle_click: :middleClick,
-      double_click: :doubleClick,
-      triple_click: :tripleClick,
-      move_to: :moveTo,
-      move_rel: :moveRel,
-      move: :moveRel,
-      drag_to: :dragTo,
-      drag_rel: :dragRel,
-      drag: :dragRel,
-      key_down: :keyDown,
-      key_up: :keyUp,
-      write: :typewrite,
-      shortcut: :hotkey,
-      grab: :screenshot,
-      locate_on_screen: :locateOnScreen,
-      locate_all_on_screen: :locateAllOnScreen,
-      locate_center_on_screen: :locateCenterOnScreen,
-      locate_all: :locateAll,
-      locate_on_window: :locateOnWindow,
-      pixel_matches_color: :pixelMatchesColor,
-      mouse_info: :mouseInfo,
-      display_mouse_position: :displayMousePosition,
-      print_info: :printInfo,
-      get_info: :getInfo
-    }.each do |snake, camel|
-      alias_method snake, camel if method_defined?(camel) || private_method_defined?(camel)
-    end
-  end
+  Platform.copy_aliases!(self)
 end
 
 begin

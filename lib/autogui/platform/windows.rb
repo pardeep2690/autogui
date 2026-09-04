@@ -279,8 +279,12 @@ module AutoGUI
         return "" if len <= 0
 
         buf = "\x00".b * ((len + 1) * 2)
-        GetWindowTextW(hwnd, buf, len + 1)
-        buf.force_encoding("UTF-16LE").encode("UTF-8").delete("\x00")
+        copied = GetWindowTextW(hwnd, buf, len + 1)
+        return "" if copied <= 0
+
+        buf.byteslice(0, copied * 2)
+          .force_encoding("UTF-16LE")
+          .encode("UTF-8", invalid: :replace, undef: :replace)
       end
 
       def window_rect(hwnd)
@@ -393,8 +397,10 @@ module AutoGUI
       end
 
       def wide(str)
-        (str.to_s.encode("UTF-16LE") + "\x00\x00".b).b
+        str.to_s.encode("UTF-16LE").b + "\x00\x00".b
       end
+
+      Platform.copy_aliases!(self)
     end
   end
 end

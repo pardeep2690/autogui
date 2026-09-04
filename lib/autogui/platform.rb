@@ -4,6 +4,18 @@ require "rbconfig"
 
 module AutoGUI
   module Platform
+    # `module_function` copies each `def` to the singleton class, but not later
+    # `alias` names. Promote any instance method that is still missing there.
+    def self.copy_aliases!(mod)
+      names = (mod.private_instance_methods(false) + mod.instance_methods(false)).uniq
+      names.each do |name|
+        sc = mod.singleton_class
+        next if sc.method_defined?(name) || sc.private_method_defined?(name)
+
+        mod.send(:module_function, name)
+      end
+    end
+
     module_function
 
     def current

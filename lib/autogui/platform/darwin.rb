@@ -180,6 +180,8 @@ module AutoGUI
         end
         sleep(AutoGUI.darwin_catch_up_time)
       end
+
+      Platform.copy_aliases!(self)
     end
   end
 end

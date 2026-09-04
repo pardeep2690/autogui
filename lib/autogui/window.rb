@@ -166,5 +166,7 @@ module AutoGUI
       w&.title
     end
     alias get_active_window_title getActiveWindowTitle
+
+    Platform.copy_aliases!(self)
   end
 end
